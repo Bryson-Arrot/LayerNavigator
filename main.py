@@ -4,9 +4,7 @@ from get_results import *
 from get_vec import *
 from globalenv import *
 from get_score import *
-from tqdm import tqdm
 from strategy import UniStrategy
-import random
 
 if __name__ == "__main__":
     ### Step 1.

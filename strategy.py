@@ -1,6 +1,5 @@
 import json
 from globalenv import *
-import random
 
 
 class UniStrategy:
@@ -14,6 +13,7 @@ class UniStrategy:
         self.task = task
         self.strategy = strategy
         self.num_layers = num_layers
+        self.method = method
 
         self.layers = []
         self.scores = []
@@ -32,7 +32,7 @@ class UniStrategy:
             self.scores = [i[1] for i in sorted_layers]
             self.scores = self.scores[:self.num_layers]
         
-        elif self.strategy.startswith("my-p"):
+        elif self.strategy.startswith("my-p"): # Change the proportion of d_score and c_score
             p = float(self.strategy.split("-p")[-1])
             assert 0<p<1
             s_scores = {}

@@ -1,15 +1,12 @@
-import sys
 from dataset import UniDataset
-from typing import List, Dict
+from typing import List
 from utils import *
 from tqdm import tqdm
 import torch
 import numpy as np
-import matplotlib.pyplot as plt
 import os
 from globalenv import *
 import json
-from get_results import get_raw_results_file_path
 
 
         
@@ -42,10 +39,10 @@ def get_score(
 
     ans_num = 2
 
-    # Get Acts
+    # Get Activations
     acts = torch.load(f"{vec_root}acts.pt")
     
-    # Get Vectos
+    # Get Vectors
     proj_info = {}
     vects = {}
     vects_norm = {}
@@ -55,7 +52,7 @@ def get_score(
         vects_norm[l] = vects[l].norm().item()
         vects[l] /= vects_norm[l]
 
-    for l in tqdm(layers,desc="Get Proj"):
+    for l in tqdm(layers,desc="Get Score"):
         all_acts = []
         all_labels = []
         for i in range(ans_num):

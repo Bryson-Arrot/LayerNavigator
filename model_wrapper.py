@@ -158,8 +158,6 @@ class QwenWrapper:
                                                           low_cpu_mem_usage=True,
                                                           ).to(self.device)
         print("Model loaded")
-        # self.model = self.model.to(t.float16)
-        # self.model.config.sliding_window = None
         self.model.eval()
         for i, layer in enumerate(self.model.model.layers):
             self.model.model.layers[i] = BlockOutputWrapper(layer, self.tokenizer)

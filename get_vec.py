@@ -1,20 +1,16 @@
 import torch
 import torch.nn.functional as F
-from model_wrapper import LlamaWrapper,QwenWrapper
 from dataset import UniDataset
 from tqdm import tqdm
 from globalenv import *
 from typing import List
 import os
-from utils import random_str
-import numpy as np
 
 # method defines all!
 # if we want to change how vectors are made, set new method, and put it in uni_generate_vectors function
 # save path is hard coded
-# if method need other dataset, rewrite the dataset with new __load_data() function, not here.
 def uni_generate_vectors(
-        method: str, # "md", "pca", "seperate"
+        method: str, # "md", "pca"
         model,
         layers: List[int],
         dataset: UniDataset,

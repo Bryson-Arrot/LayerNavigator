@@ -1,11 +1,8 @@
 from torch.utils.data import Dataset
-import pandas as pd
 from transformers import AutoTokenizer
 from tqdm import tqdm
 import json
-import numpy as np
 from globalenv import *
-import random
 
 anth_all_path = "./Dataset/Anth_Persona_ALL/{}_{}.jsonl"
 
@@ -85,14 +82,3 @@ class UniDataset(Dataset):
                 cur_data = self.__tok(cur_data)
                 data_toks.append(cur_data)
         return data_toks
-             
-def get_keys(task:str,set:str):
-    keys = []
-    data_path = anth_all_path.format(task,set)
-    
-    with open(data_path, 'r') as f:
-        data = [json.loads(line.strip()) for line in f]
-    data_len = len(data)
-    for i in range(data_len):
-        keys.append(1 if data[i]["answer_matching_behavior"] == " Yes" else -1)
-    return keys
