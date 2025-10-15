@@ -15,8 +15,10 @@ def get_score(
     dataset:UniDataset,
     vec_task:str,
     vec_method:str,
-    acts_pre:str=None,
+    acts_pre:str="standard",
 ):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu") # Whether use GPU to compute score
+
     assert dataset.train == True, "Only Use Train Dataset"
 
     vec_root = f"./Vectors/{vec_task}/{vec_method}/"
@@ -43,7 +45,7 @@ def get_score(
     acts = torch.load(f"{vec_root}acts.pt")
     
     # Get Vectors
-    proj_info = {}
+    score_info = {}
     vects = {}
     vects_norm = {}
     for l in layers:
@@ -59,37 +61,42 @@ def get_score(
             all_acts.append(torch.stack(acts[i][l]))
             all_labels.append(torch.ones(all_acts[i].shape[0])*i)
 
-        all_acts = torch.cat(all_acts,dim=0).numpy()
+        all_acts = torch.cat(all_acts,dim=0).to(device)
 
         if acts_pre == "standard":
-            all_acts = (all_acts-all_acts.mean(axis=0))/all_acts.std(axis=0)
+            all_acts = (all_acts-all_acts.mean(dim=0))/all_acts.std(dim=0)
 
-        all_labels = torch.cat(all_labels,dim=0).numpy()
+        all_labels = torch.cat(all_labels,dim=0).to(device)
 
+        # C_score
         all_diff = all_acts[all_labels==0] - all_acts[all_labels==1]
-        all_diff = all_diff / np.linalg.norm(all_diff,axis=1,keepdims=True)
-        c_score = float(np.mean(all_diff.dot(vects[l].numpy())))
+        all_diff = all_diff / all_diff.norm(dim=1, keepdim=True)
+        v = vects[l].to(device)
+        c_score = all_diff @ v
+        c_score = c_score.mean().item()
 
-        n_features = all_acts.shape[1]
-        mean_total = all_acts.mean(axis=0)
-        S_w = np.zeros((n_features, n_features), dtype=all_acts.dtype)
-        S_b = np.zeros((n_features, n_features), dtype=all_acts.dtype)
-        classes = np.unique(all_labels)
-        for c in classes:
+        # D_score
+        n_features = all_acts.size(1)
+        mean_total = all_acts.mean(dim=0)
+        S_w = torch.zeros((n_features, n_features), device=device)
+        S_b = torch.zeros((n_features, n_features), device=device)
+
+        for c in torch.unique(all_labels):
             class_acts = all_acts[all_labels == c]
-            mean_class = class_acts.mean(axis=0)
+            mean_class = class_acts.mean(dim=0)
             diff = class_acts - mean_class
             S_w += diff.T @ diff
-            mean_diff = (mean_class - mean_total).reshape(-1, 1)
-            S_b += class_acts.shape[0] * (mean_diff @ mean_diff.T)
-        S_t = S_w + S_b    
-        v = vects[l].numpy().reshape(-1, 1)
+            mean_diff = (mean_class - mean_total).unsqueeze(1)  # (D,1)
+            S_b += class_acts.size(0) * (mean_diff @ mean_diff.T)
+
+        S_t = S_w + S_b
+        v = v.reshape(-1, 1)
         numerator = (v.T @ S_b @ v).item()
         denominator = (v.T @ S_t @ v).item()
-        d_score = numerator / denominator if denominator!= 0 else np.inf
+        d_score = numerator / denominator if denominator != 0 else float('inf')
         
-        proj_info[l] = {"s_score":d_score+c_score,"d_score":d_score,"c_score":c_score}
+        score_info[l] = {"s_score":d_score+c_score,"d_score":d_score,"c_score":c_score}
         with open(f"{save_root}L{l}.json","w") as f:
-            json.dump(proj_info[l],f,indent=4)
+            json.dump(score_info[l],f,indent=4)
 
-    return proj_info
+    return score_info
