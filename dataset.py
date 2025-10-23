@@ -75,10 +75,7 @@ class UniDataset(Dataset):
                     cur_key = 1 if data[cur_idx]["answer_matching_behavior"] == " Yes" else -1
                     self.keys.append(cur_key)
 
-                    if self.prompt_mode == "inst":
-                        cur_data.append(INST_TEMPLATE.format(data[cur_idx]["question"]+Anth_YN_QUESTION_PROFIX,INST_SYS_ANS_PREFIX_alt1))
-                    else:
-                        raise ValueError(f"Invalid prompt mode: {self.prompt_mode}")
+                    cur_data.append(INST_TEMPLATE.format(data[cur_idx]["question"]+Anth_YN_QUESTION_PROFIX,INST_SYS_ANS_PREFIX_alt1))
                 cur_data = self.__tok(cur_data)
                 data_toks.append(cur_data)
         return data_toks
