@@ -71,14 +71,14 @@ def get_raw_results(
     assert len(layers) == len(Alphas), "layers, Alphas must have same length"
 
 
-    vec_root = f"./Vectors/{train_task}/{train_method}/"
+    vec_root = f"./Vectors/{train_task}/{train_method}"
 
     svec_path = vec_root[10:] # remove "./Vectors/"
     svec_path = svec_path.replace("/","+")
 
     vects = {}
     for i in range(len(layers)):
-        vector_path = vec_root + f"L{layers[i]}.pt"
+        vector_path = vec_root + f"/L{layers[i]}.pt"
         vects[layers[i]] = torch.load(vector_path).to(model.device)
         vects[layers[i]] *= Alphas[i]
 
@@ -113,7 +113,6 @@ def get_raw_results(
         json.dump(results,f,indent=4)
     
     # Get Logits
-    assert test_dataset.multi_ans == False
     last_logits = []
     for d in test_dataset:
         cur_last_logits = model.get_last_logits(d.to(model.device)).detach().cpu()

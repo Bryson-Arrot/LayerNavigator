@@ -21,7 +21,7 @@ def get_score(
 
     assert dataset.train == True, "Only Use Train Dataset"
 
-    vec_root = f"./Vectors/{vec_task}/{vec_method}/"
+    vec_root = f"./Vectors/{vec_task}/{vec_method}"
     
     svec_path = vec_root[10:] # remove "./Vectors/"
     svec_path = svec_path.replace("/","+")
@@ -42,14 +42,14 @@ def get_score(
     ans_num = 2
 
     # Get Activations
-    acts = torch.load(f"{vec_root}acts.pt")
+    acts = torch.load(f"{vec_root}/acts.pt")
     
     # Get Vectors
     score_info = {}
     vects = {}
     vects_norm = {}
     for l in layers:
-        vector_path = vec_root + f"L{l}.pt"
+        vector_path = vec_root + f"/L{l}.pt"
         vects[l] = torch.load(vector_path)
         vects_norm[l] = vects[l].norm().item()
         vects[l] /= vects_norm[l]
